@@ -1,0 +1,59 @@
+# Django
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.sqlite3
+*.sqlite3-journal
+*.so
+.Python
+
+# Environment variables
+.env
+.env.*
+!.env.*.example
+
+# Virtual environment
+venv/
+env/
+ENV/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Logs
+*.log
+
+# Static and media files
+static/
+media/
+
+# Docker volumes
+postgres_data/
+
+# Coverage
+htmlcov/
+.coverage
+.coverage.*
+coverage.xml
+
+# Pytest
+.pytest_cache/
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
