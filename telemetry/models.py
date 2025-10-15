@@ -15,6 +15,8 @@ class ErrorLog(models.Model):
     """A single raw error event captured from a client."""
     project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name="error_logs")
     timestamp = models.DateTimeField(auto_now_add=True)
+    url = models.CharField(max_length=2048)
+    method = models.CharField(max_length=10)
     error_type = models.CharField(max_length=255)
     error_message = models.TextField()
     traceback = models.TextField()

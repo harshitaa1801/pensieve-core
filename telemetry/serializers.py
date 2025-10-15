@@ -5,7 +5,7 @@ from .models import Project, ErrorLog, PerformanceLog
 class ErrorLogSerializer(serializers.ModelSerializer):
     class Meta:
         model = ErrorLog
-        fields = ['error_type', 'error_message', 'traceback']
+        fields = ['error_type', 'error_message', 'traceback', 'url', 'method']
 
 
 class PerformanceLogSerializer(serializers.ModelSerializer):
