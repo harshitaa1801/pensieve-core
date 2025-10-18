@@ -6,6 +6,7 @@ from rest_framework.permissions import AllowAny
 from rest_framework import status
 from .models import Project
 from .serializers import PerformanceLogSerializer, ErrorLogSerializer
+from .tasks import process_performance_log, process_error_log
 
 class IngestView(APIView):
     """
@@ -20,7 +21,7 @@ class IngestView(APIView):
             return Response({"error": "API key missing"}, status=status.HTTP_401_UNAUTHORIZED)
 
         try:
-            project = Project.objects.get(api_key=api_key)
+            project = Project.objects.only('id').get(api_key=api_key)
         except Project.DoesNotExist:
             return Response({"error": "Invalid API key"}, status=status.HTTP_403_FORBIDDEN)
 
@@ -30,14 +31,19 @@ class IngestView(APIView):
 
         if payload_type == "performance":
             serializer = PerformanceLogSerializer(data=payload)
+            if serializer.is_valid():
+                # Use Celery task to process performance log asynchronously
+                process_performance_log.delay(project.id, serializer.validated_data)
+                return Response(status=status.HTTP_202_ACCEPTED)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
         elif payload_type == "error":
             serializer = ErrorLogSerializer(data=payload)
+            if serializer.is_valid():
+                # Use Celery task to process error log asynchronously
+                process_error_log.delay(project.id, serializer.validated_data)
+                return Response(status=status.HTTP_202_ACCEPTED)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
         else:
             return Response({"error": "Invalid data type specified"}, status=status.HTTP_400_BAD_REQUEST)
-
-        if serializer.is_valid():
-            # Associate the validated data with the authenticated project before saving.
-            serializer.save(project=project)
-            return Response(status=status.HTTP_201_CREATED)
-        
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

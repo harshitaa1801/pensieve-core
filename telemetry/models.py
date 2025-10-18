@@ -14,6 +14,7 @@ class Project(models.Model):
 class ErrorLog(models.Model):
     """A single raw error event captured from a client."""
     project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name="error_logs")
+    group = models.ForeignKey('GroupedError', on_delete=models.CASCADE, related_name="instances", null=True)
     timestamp = models.DateTimeField(auto_now_add=True)
     url = models.CharField(max_length=2048)
     method = models.CharField(max_length=10)
@@ -38,3 +39,19 @@ class PerformanceLog(models.Model):
 
     class Meta:
         ordering = ['-timestamp']
+
+
+class GroupedError(models.Model):
+    """Represents a group of identical errors."""
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name="grouped_errors")
+    group_hash = models.CharField(max_length=64, unique=True)
+    error_type = models.CharField(max_length=255)
+    last_seen = models.DateTimeField(auto_now=True)
+    first_seen = models.DateTimeField(auto_now_add=True)
+    count = models.PositiveIntegerField(default=1)
+    
+    class Meta:
+        ordering = ['-last_seen']
+
+    def __str__(self):
+        return f"{self.error_type} (seen {self.count} times)"
