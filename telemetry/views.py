@@ -1,11 +1,12 @@
 # telemetry/views.py
 
 from rest_framework.views import APIView
+from rest_framework import viewsets
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
 from rest_framework import status
-from .models import Project
-from .serializers import PerformanceLogSerializer, ErrorLogSerializer
+from .models import GroupedError, Project
+from .serializers import GroupedErrorSerializer, PerformanceLogSerializer, ErrorLogSerializer
 from .tasks import process_performance_log, process_error_log
 
 class IngestView(APIView):
@@ -47,3 +48,20 @@ class IngestView(APIView):
 
         else:
             return Response({"error": "Invalid data type specified"}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class GroupedErrorViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    A read-only API endpoint to list the grouped errors for the
+    authenticated project.
+    """
+    serializer_class = GroupedErrorSerializer
+
+    def get_queryset(self):
+        # Authenticate the project via the API key
+        api_key = self.request.headers.get("X-API-KEY")
+        if not api_key:
+            return GroupedError.objects.none() # Return empty if no key
+
+        # Filter the queryset to only show errors for this project
+        return GroupedError.objects.filter(project__api_key=api_key)
