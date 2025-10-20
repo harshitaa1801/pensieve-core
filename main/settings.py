@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'telemetry',
+    'django_celery_beat'
 ]
 
 MIDDLEWARE = [
@@ -150,3 +151,13 @@ CELERY_RESULT_BACKEND = os.environ.get('CELERY_RESULT_BACKEND', REDIS_URL)
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
+
+
+# Celery Beat Settings
+CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
+CELERY_BEAT_SCHEDULE = {
+    'aggregate-performance-logs-every-5-minutes': {
+        'task': 'telemetry.tasks.aggregate_performance_logs',
+        'schedule': 300.0,  # 300 seconds = 5 minutes
+    },
+}
