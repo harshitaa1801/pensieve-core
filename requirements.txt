@@ -6,3 +6,4 @@ djangorestframework==3.16.1
 celery==5.5.3
 redis>=5.0
 django-celery-beat==2.8.1
+numpy==2.2.6

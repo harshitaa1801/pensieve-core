@@ -158,6 +158,11 @@ CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
 CELERY_BEAT_SCHEDULE = {
     'aggregate-performance-logs-every-5-minutes': {
         'task': 'telemetry.tasks.aggregate_performance_logs',
-        'schedule': 300.0,  # 300 seconds = 5 minutes
+        'schedule': 300.0,  # 5 minutes
+    },
+    'cleanup-old-raw-logs-daily': {
+        'task': 'telemetry.tasks.cleanup_old_raw_logs',
+        'schedule': 86400.0,  # 24 hours
+        'options': {'queue' : 'low_priority'}, # Optional: run on a different queue
     },
 }

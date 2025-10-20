@@ -2,8 +2,11 @@
 
 import hashlib
 from celery import shared_task
-from .models import GroupedError, Project, PerformanceLog, ErrorLog
+from .models import GroupedError, Project, PerformanceLog, ErrorLog, AggregatedMetric
 from django.db import transaction
+import numpy as np
+from django.utils import timezone
+from datetime import timedelta
 
 @shared_task
 def process_performance_log(project_id, payload):
@@ -71,3 +74,74 @@ def process_error_log(project_id, payload):
 
     except Project.DoesNotExist:
         pass
+
+
+@shared_task
+def aggregate_performance_logs():
+    """
+    Aggregates raw performance logs into 5-minute windows.
+    This task is scheduled to run every 5 minutes by Celery Beat.
+    """
+    print("Starting aggregation of performance logs...")
+    # 1. Define the time window for aggregation
+    end_time = timezone.now()
+    start_time = end_time - timedelta(minutes=5)
+
+    # 2. Get all logs in the last 5 minutes
+    logs_to_process = PerformanceLog.objects.filter(timestamp__gte=start_time, timestamp__lt=end_time)
+
+    # 3. Group the logs by project and URL
+    logs_by_url = logs_to_process.values('project_id', 'url').distinct()
+
+    for item in logs_by_url:
+        project_id = item['project_id']
+        url = item['url']
+
+        # Get all durations for this specific project and URL
+        durations = list(logs_to_process.filter(
+            project_id=project_id, 
+            url=url
+        ).values_list('duration_ms', flat=True))
+
+        if not durations:
+            continue
+
+        # 4. Calculate the metrics using NumPy
+        request_count = len(durations)
+        avg_duration = int(np.mean(durations))
+        p50_duration = int(np.percentile(durations, 50)) # Median
+        p95_duration = int(np.percentile(durations, 95))
+
+        # 5. Save the aggregated data
+        # We "floor" the timestamp to the start of the 5-minute window
+        floored_timestamp = start_time.replace(second=0, microsecond=0)
+
+        AggregatedMetric.objects.update_or_create(
+            project_id=project_id,
+            url=url,
+            timestamp=floored_timestamp,
+            defaults={
+                'request_count': request_count,
+                'avg_duration_ms': avg_duration,
+                'p50_duration_ms': p50_duration,
+                'p95_duration_ms': p95_duration,
+            }
+        )
+
+
+@shared_task
+def cleanup_old_raw_logs():
+    """
+    Deletes raw performance and error logs older than a defined retention period.
+    This task is scheduled to run once a day.
+    """
+    # Define how long we want to keep detailed, raw logs
+    retention_period = timezone.now() - timedelta(days=30) # Keep 30 days of raw logs
+
+    # Delete old logs
+    old_perf_logs = PerformanceLog.objects.filter(timestamp__lt=retention_period)
+    old_error_logs = ErrorLog.objects.filter(timestamp__lt=retention_period)
+
+    # ._raw_delete() is a faster way to delete large numbers of objects
+    old_perf_logs._raw_delete(old_perf_logs.db)
+    old_error_logs._raw_delete(old_error_logs.db)

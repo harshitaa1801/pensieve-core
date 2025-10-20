@@ -55,3 +55,22 @@ class GroupedError(models.Model):
 
     def __str__(self):
         return f"{self.error_type} (seen {self.count} times)"
+
+
+class AggregatedMetric(models.Model):
+    """Stores aggregated performance metrics for a specific endpoint in a time window."""
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name="metrics")
+    url = models.CharField(max_length=2048, db_index=True)
+    timestamp = models.DateTimeField(db_index=True) # The start of the aggregation window
+
+    request_count = models.PositiveIntegerField(default=0)
+    avg_duration_ms = models.PositiveIntegerField(default=0)
+    p50_duration_ms = models.PositiveIntegerField(default=0) # Median
+    p95_duration_ms = models.PositiveIntegerField(default=0) # 95th Percentile
+
+    class Meta:
+        ordering = ['-timestamp']
+        unique_together = ['project', 'url', 'timestamp'] # Ensures one record per window
+
+    def __str__(self):
+        return f"{self.url} @ {self.timestamp.strftime('%Y-%m-%d %H:%M')}"        
