@@ -1,27 +1,37 @@
 version: '3.8'
 
 services:
-  db:
+  pendb:
     image: postgres:15
     env_file:
       - .env.dev
+    # expose:
+    #   - "5432"
     ports:
-      - "5432:5432"
+      - "5434:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    networks:
+      - internal
 
   web:
     build: .
+    container_name: pensieve-core
     volumes:
       - .:/code
       - static_volume:/code/static
       - media_volume:/code/media
     expose:
       - "8000"
+    ports:
+      - "8000:8000"
     depends_on:
-      - db
+      - pendb
     env_file:
       - .env.dev
+    networks:
+      - shared
+      - internal
 
   nginx:
     image: nginx:latest
@@ -34,8 +44,57 @@ services:
       - media_volume:/code/media
     depends_on:
       - web
+    networks:
+      - shared
+      - internal
+
+  celery:
+    build: .
+    command: celery -A main worker --loglevel=info
+    container_name: celery
+    volumes:
+      - .:/code
+    depends_on:
+      - redis
+    env_file:
+      - .env.dev
+    networks:
+      - internal
+
+  redis:
+    image: redis:alpine
+    container_name: redis
+    ports:
+      - "6379:6379"
+    networks:
+      - internal
+    volumes:
+      - ./postgres_data/redis:/data
+      - ./redis_configs/dev/redis.conf:/usr/local/etc/redis/redis.conf
+    command: redis-server /usr/local/etc/redis/redis.conf
+
+
+  celery-beat:
+    build: .
+    command: celery -A main beat -l info
+    container_name: celery-beat
+    volumes:
+      - .:/code
+    depends_on:
+      - redis
+    env_file:
+      - .env.dev
+    networks:
+      - internal
+
 
 volumes:
   postgres_data:
   static_volume:
   media_volume:
+
+
+networks:
+  internal: {}            # Private to this project
+  shared:
+    external: true         # Shared between multiple projects
