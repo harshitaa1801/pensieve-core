@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import GroupedError, Project, ErrorLog, PerformanceLog
+from .models import AggregatedMetric, GroupedError, Project, ErrorLog, PerformanceLog
 
 
 class ErrorLogSerializer(serializers.ModelSerializer):
@@ -18,3 +18,16 @@ class GroupedErrorSerializer(serializers.ModelSerializer):
     class Meta:
         model = GroupedError
         fields = ['error_type', 'count', 'last_seen', 'first_seen']
+
+
+class AggregatedMetricSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AggregatedMetric
+        fields = [
+            'url', 
+            'timestamp', 
+            'request_count', 
+            'avg_duration_ms', 
+            'p50_duration_ms', 
+            'p95_duration_ms'
+        ]
