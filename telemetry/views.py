@@ -5,6 +5,7 @@ from rest_framework import viewsets
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
 from rest_framework import status
+from django.db.models import Max
 from django_filters.rest_framework import DjangoFilterBackend
 from django_filters import rest_framework as filters
 
@@ -118,3 +119,34 @@ class AggregatedMetricViewSet(viewsets.ReadOnlyModelViewSet):
 
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
+
+
+class TopEndpointsView(APIView):
+    """
+    A read-only API endpoint that returns the top 5 slowest endpoints
+    based on their max p95 latency.
+    """
+    def get(self, request, *args, **kwargs):
+        # 1. Authenticate the project
+        api_key = self.request.headers.get("X-API-KEY")
+        if not api_key:
+            return Response({"error": "API key missing"}, status=401)
+        
+        try:
+            project_id = Project.objects.only('id').get(api_key=api_key).id
+        except Project.DoesNotExist:
+            return Response({"error": "Invalid API key"}, status=403)
+        
+        # 2. Perform the aggregation query in the database
+        # This groups all metrics by 'url', finds the max 'p95_duration_ms' for each,
+        # orders them, and takes the top 5.
+        top_slow_endpoints = (
+            AggregatedMetric.objects
+            .filter(project_id=project_id)
+            .values('url') # Group by URL
+            .annotate(max_p95=Max('p95_duration_ms')) # Find the max p95 for each group
+            .order_by('-max_p95') # Order by the highest p95 first
+            [:5] # Take the top 5
+        )
+        
+        return Response(top_slow_endpoints)
