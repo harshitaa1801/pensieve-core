@@ -22,7 +22,8 @@ from django.urls import include
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/', include('telemetry.urls')),
+    path('', include('accounts.urls')),  # Home, auth, and dashboard pages
+    path('api/', include('telemetry.urls')),  # Telemetry API endpoints
 ]
 
 # Serve static and media files during development

@@ -1,12 +1,18 @@
 from django.db import models
+from django.contrib.auth.models import User
 import uuid
 
 class Project(models.Model):
     """A project being monitored by our APM."""
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name="projects", null=True, blank=True)
     name = models.CharField(max_length=200)
     api_key = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = [['owner', 'name']]
+        ordering = ['-created_at']
 
     def __str__(self):
         return f"{self.name}: {self.api_key}"

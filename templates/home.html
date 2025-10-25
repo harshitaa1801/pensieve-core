@@ -1,0 +1,109 @@
+{% extends 'base.html' %}
+
+{% block title %}Welcome - Pensieve Log{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+        <!-- Hero Section -->
+        <div class="text-center mb-5">
+            <h1 class="display-4 fw-bold mb-3">
+                <i class="bi bi-journal-code text-primary"></i> Pensieve Log
+            </h1>
+            <p class="lead text-muted">
+                Modern Application Performance Monitoring & Error Tracking
+            </p>
+        </div>
+
+        <!-- Features -->
+        <div class="row g-4 mb-5">
+            <div class="col-md-4">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body text-center">
+                        <i class="bi bi-graph-up text-primary" style="font-size: 3rem;"></i>
+                        <h5 class="card-title mt-3">Performance Monitoring</h5>
+                        <p class="card-text text-muted">
+                            Track API response times, identify bottlenecks, and optimize your application performance.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body text-center">
+                        <i class="bi bi-bug text-danger" style="font-size: 3rem;"></i>
+                        <h5 class="card-title mt-3">Error Tracking</h5>
+                        <p class="card-text text-muted">
+                            Capture and group errors automatically. Get detailed stack traces and error context.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body text-center">
+                        <i class="bi bi-lightning-charge text-warning" style="font-size: 3rem;"></i>
+                        <h5 class="card-title mt-3">Real-time Insights</h5>
+                        <p class="card-text text-muted">
+                            Get instant alerts and real-time analytics to stay on top of your application health.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Call to Action -->
+        <div class="card shadow-sm">
+            <div class="card-body text-center py-5">
+                <h3 class="mb-4">Ready to start monitoring your applications?</h3>
+                <div class="d-flex gap-3 justify-content-center">
+                    <a href="{% url 'signup' %}" class="btn btn-primary btn-lg">
+                        <i class="bi bi-person-plus"></i> Create Account
+                    </a>
+                    <a href="{% url 'login' %}" class="btn btn-outline-primary btn-lg">
+                        <i class="bi bi-box-arrow-in-right"></i> Login
+                    </a>
+                </div>
+                <p class="text-muted mt-4 mb-0">
+                    <small>Free to get started • No credit card required</small>
+                </p>
+            </div>
+        </div>
+
+        <!-- How It Works -->
+        <div class="mt-5">
+            <h3 class="text-center mb-4">How It Works</h3>
+            <div class="row g-4">
+                <div class="col-md-3 text-center">
+                    <div class="rounded-circle bg-primary text-white d-inline-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                        <h4 class="mb-0">1</h4>
+                    </div>
+                    <h6 class="mt-3">Sign Up</h6>
+                    <p class="text-muted small">Create your free account</p>
+                </div>
+                <div class="col-md-3 text-center">
+                    <div class="rounded-circle bg-primary text-white d-inline-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                        <h4 class="mb-0">2</h4>
+                    </div>
+                    <h6 class="mt-3">Create Project</h6>
+                    <p class="text-muted small">Set up your first project</p>
+                </div>
+                <div class="col-md-3 text-center">
+                    <div class="rounded-circle bg-primary text-white d-inline-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                        <h4 class="mb-0">3</h4>
+                    </div>
+                    <h6 class="mt-3">Get API Key</h6>
+                    <p class="text-muted small">Copy your unique API key</p>
+                </div>
+                <div class="col-md-3 text-center">
+                    <div class="rounded-circle bg-primary text-white d-inline-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                        <h4 class="mb-0">4</h4>
+                    </div>
+                    <h6 class="mt-3">Start Monitoring</h6>
+                    <p class="text-muted small">Integrate and monitor</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

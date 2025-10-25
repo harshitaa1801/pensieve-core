@@ -3,6 +3,7 @@ psycopg2-binary>=2.9
 python-dotenv>=1.0
 gunicorn>=21.2
 djangorestframework==3.16.1
+djangorestframework-simplejwt>=5.3.1
 celery==5.5.3
 redis>=5.0
 django-celery-beat==2.8.1
