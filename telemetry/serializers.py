@@ -17,7 +17,7 @@ class PerformanceLogSerializer(serializers.ModelSerializer):
 class GroupedErrorSerializer(serializers.ModelSerializer):
     class Meta:
         model = GroupedError
-        fields = ['group_hash', 'error_type', 'count', 'last_seen', 'first_seen']
+        fields = ['url', 'group_hash', 'error_type', 'count', 'last_seen', 'first_seen']
 
 
 class AggregatedMetricSerializer(serializers.ModelSerializer):
@@ -46,6 +46,7 @@ class GroupedErrorDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = GroupedError
         fields = [
+            'url',
             'error_type', 
             'count', 
             'last_seen', 

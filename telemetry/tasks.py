@@ -62,6 +62,7 @@ def process_error_log(project_id, payload):
             grouped_error, created = GroupedError.objects.get_or_create(
                 project=project,
                 group_hash=group_hash,
+                url=payload.get('url'),
                 defaults={'error_type': payload.get('error_type')}
             )
             if not created:
@@ -128,6 +129,40 @@ def aggregate_performance_logs():
             }
         )
 
+    # We group all logs by just the project
+    logs_by_project = logs_to_process.values('project_id').distinct()
+
+    for item in logs_by_project:
+        project_id = item['project_id']
+
+        # Get all durations for this entire project in the window
+        all_durations = list(logs_to_process.filter(
+            project_id=project_id
+        ).values_list('duration_ms', flat=True))
+
+        if not all_durations:
+            continue
+
+        # Calculate the overall metrics
+        overall_request_count = len(all_durations)
+        overall_avg_duration = int(np.mean(all_durations))
+        overall_p50_duration = int(np.percentile(all_durations, 50))
+        overall_p95_duration = int(np.percentile(all_durations, 95))
+
+        floored_timestamp = start_time.replace(second=0, microsecond=0)
+
+        # Save the aggregated data with a special URL
+        AggregatedMetric.objects.update_or_create(
+            project_id=project_id,
+            url="__overall__", # <-- Special identifier
+            timestamp=floored_timestamp,
+            defaults={
+                'request_count': overall_request_count,
+                'avg_duration_ms': overall_avg_duration,
+                'p50_duration_ms': overall_p50_duration,
+                'p95_duration_ms': overall_p95_duration,
+            }
+        )
 
 @shared_task
 def cleanup_old_raw_logs():

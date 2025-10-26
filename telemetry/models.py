@@ -51,6 +51,7 @@ class GroupedError(models.Model):
     """Represents a group of identical errors."""
     project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name="grouped_errors")
     group_hash = models.CharField(max_length=64, unique=True)
+    url = models.CharField(max_length=2048)
     error_type = models.CharField(max_length=255)
     last_seen = models.DateTimeField(auto_now=True)
     first_seen = models.DateTimeField(auto_now_add=True)
