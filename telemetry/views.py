@@ -70,6 +70,7 @@ class GroupedErrorViewSet(viewsets.ReadOnlyModelViewSet):
     authenticated project.
     """
     serializer_class = GroupedErrorSerializer
+    permission_classes = [AllowAny]  # Uses X-API-KEY authentication
 
     def get_queryset(self):
         # Authenticate the project via the API key
@@ -87,6 +88,7 @@ class AggregatedMetricViewSet(viewsets.ReadOnlyModelViewSet):
     for the authenticated project.
     """
     serializer_class = AggregatedMetricSerializer
+    permission_classes = [AllowAny]  # Uses X-API-KEY authentication
 
     RESULT_LIMIT = 100
 
@@ -126,6 +128,8 @@ class TopEndpointsView(APIView):
     A read-only API endpoint that returns the top 5 slowest endpoints
     based on their max p95 latency.
     """
+    permission_classes = [AllowAny]  # Uses X-API-KEY authentication
+    
     def get(self, request, *args, **kwargs):
         # 1. Authenticate the project
         api_key = self.request.headers.get("X-API-KEY")

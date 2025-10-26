@@ -177,9 +177,8 @@ REST_FRAMEWORK = {
         'rest_framework_simplejwt.authentication.JWTAuthentication',
         'rest_framework.authentication.SessionAuthentication',
     ),
-    'DEFAULT_PERMISSION_CLASSES': (
-        'rest_framework.permissions.IsAuthenticated',
-    ),
+    # No default permission - each view specifies its own
+    # This allows telemetry APIs to use X-API-KEY and accounts APIs to use JWT
 }
 
 # JWT Settings
