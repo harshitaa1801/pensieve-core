@@ -31,3 +31,31 @@ class AggregatedMetricSerializer(serializers.ModelSerializer):
             'p50_duration_ms', 
             'p95_duration_ms'
         ]
+
+
+class ErrorLogInstanceSerializer(serializers.ModelSerializer):
+    """Serializes a single, raw error log instance."""
+    class Meta:
+        model = ErrorLog
+        fields = ['timestamp', 'error_message', 'traceback']
+
+class GroupedErrorDetailSerializer(serializers.ModelSerializer):
+    """Serializes a grouped error plus its latest instance."""
+    latest_instance = serializers.SerializerMethodField()
+
+    class Meta:
+        model = GroupedError
+        fields = [
+            'error_type', 
+            'count', 
+            'last_seen', 
+            'first_seen', 
+            'latest_instance'
+        ]
+    
+    def get_latest_instance(self, obj):
+        # Get the most recent raw log for this group
+        latest = obj.instances.order_by('-timestamp').first()
+        if latest:
+            return ErrorLogInstanceSerializer(latest).data
+        return None

@@ -10,7 +10,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from django_filters import rest_framework as filters
 
 from .models import AggregatedMetric, GroupedError, Project
-from .serializers import AggregatedMetricSerializer, GroupedErrorSerializer, PerformanceLogSerializer, ErrorLogSerializer
+from .serializers import AggregatedMetricSerializer, GroupedErrorDetailSerializer, GroupedErrorSerializer, PerformanceLogSerializer, ErrorLogSerializer
 from .tasks import process_performance_log, process_error_log
 
 
@@ -71,7 +71,8 @@ class GroupedErrorViewSet(viewsets.ReadOnlyModelViewSet):
     """
     serializer_class = GroupedErrorSerializer
     permission_classes = [AllowAny]  # Uses X-API-KEY authentication
-
+    lookup_field = 'group_hash'
+    
     def get_queryset(self):
         # Authenticate the project via the API key
         api_key = self.request.headers.get("X-API-KEY")
@@ -80,6 +81,12 @@ class GroupedErrorViewSet(viewsets.ReadOnlyModelViewSet):
 
         # Filter the queryset to only show errors for this project
         return GroupedError.objects.filter(project__api_key=api_key)
+
+    def get_serializer_class(self):
+        # Use a different serializer for the detail view
+        if self.action == 'retrieve':
+            return GroupedErrorDetailSerializer
+        return GroupedErrorSerializer
 
 
 class AggregatedMetricViewSet(viewsets.ReadOnlyModelViewSet):
@@ -154,3 +161,5 @@ class TopEndpointsView(APIView):
         )
         
         return Response(top_slow_endpoints)
+
+
