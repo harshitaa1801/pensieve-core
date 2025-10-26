@@ -60,3 +60,10 @@ class GroupedErrorDetailSerializer(serializers.ModelSerializer):
         if latest:
             return ErrorLogInstanceSerializer(latest).data
         return None
+
+
+class PerformanceLogInstanceSerializer(serializers.ModelSerializer):
+    """Serializes a single raw performance log for the dashboard."""
+    class Meta:
+        model = PerformanceLog
+        fields = ['timestamp', 'duration_ms', 'status_code']

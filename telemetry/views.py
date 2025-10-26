@@ -9,8 +9,8 @@ from django.db.models import Max
 from django_filters.rest_framework import DjangoFilterBackend
 from django_filters import rest_framework as filters
 
-from .models import AggregatedMetric, GroupedError, Project
-from .serializers import AggregatedMetricSerializer, GroupedErrorDetailSerializer, GroupedErrorSerializer, PerformanceLogSerializer, ErrorLogSerializer
+from .models import AggregatedMetric, GroupedError, PerformanceLog, Project
+from .serializers import AggregatedMetricSerializer, GroupedErrorDetailSerializer, GroupedErrorSerializer, PerformanceLogInstanceSerializer, PerformanceLogSerializer, ErrorLogSerializer
 from .tasks import process_performance_log, process_error_log
 
 
@@ -163,3 +163,37 @@ class TopEndpointsView(APIView):
         return Response(top_slow_endpoints)
 
 
+class PerformanceLogViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    A read-only API endpoint to list raw performance logs,
+    filterable by URL.
+    """
+    serializer_class = PerformanceLogInstanceSerializer
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['url']
+    
+    RESULT_LIMIT = 100
+
+    def get_queryset(self):
+        api_key = self.request.headers.get("X-API-KEY")
+        if not api_key:
+            return PerformanceLog.objects.none()
+        
+        # Return logs for this project, newest first
+        return PerformanceLog.objects.filter(
+            project__api_key=api_key
+        ).order_by('-timestamp')
+    
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+
+        if self.RESULT_LIMIT:
+            queryset = queryset[:self.RESULT_LIMIT]
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)

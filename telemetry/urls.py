@@ -2,13 +2,13 @@
 
 from django.urls import include, path
 from rest_framework.routers import DefaultRouter
-from .views import AggregatedMetricViewSet, GroupedErrorViewSet, IngestView, TopEndpointsView
+from .views import AggregatedMetricViewSet, GroupedErrorViewSet, IngestView, PerformanceLogViewSet, TopEndpointsView
 
 # Create a router and register our viewsets with it.
 router = DefaultRouter()
 router.register(r'errors', GroupedErrorViewSet, basename='grouped-error')
 router.register(r'metrics', AggregatedMetricViewSet, basename='aggregated-metric')
-
+router.register(r'performance-logs', PerformanceLogViewSet, basename='performance-log')
 urlpatterns = [
     path('ingest/', IngestView.as_view(), name='ingest'),
     path('pensieve/metrics/top-endpoints/', TopEndpointsView.as_view(), name='top-endpoints'),
